@@ -1,9 +1,10 @@
 "use client";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Message } from "@/lib/validations/message";
-import { cn } from "@/lib/utils";
+import { cn, toPusherKey } from "@/lib/utils";
 import Image from "next/image";
 import { format } from "date-fns";
+import { pusherClient } from "@/lib/pusher";
 
 interface MessagesProps {
   initialMessages: Message[];
@@ -21,6 +22,19 @@ const Messages = ({
 }: MessagesProps) => {
   const scrollDownRef = useRef<HTMLDivElement | null>(null);
   const [messages, setMessages] = useState<Message[]>(initialMessages);
+
+  useEffect(() => {
+    pusherClient.subscribe(toPusherKey(`chat:${chatId}`));
+    const messageHandler = (message: Message) => {
+      setMessages((prev) => [message, ...prev]);
+    };
+    pusherClient.bind("incoming_message", messageHandler);
+    return () => {
+      pusherClient.unsubscribe(toPusherKey(`chat:${chatId}`));
+
+      pusherClient.unbind("incoming_message", messageHandler);
+    };
+  }, [chatId]);
 
   const formateTimeStamp = (timestamp: number) => {
     return format(timestamp, "HH:mm");
@@ -67,7 +81,6 @@ const Messages = ({
                 >
                   {message.text}{" "}
                   <span className="ml-2 text-xs text-gray-400">
-                    {/* timestamp */}
                     {formateTimeStamp(message.timestamp)}
                   </span>
                 </span>
