@@ -1,7 +1,10 @@
+import ChatInput from "@/components/ChatInput";
+import Messages from "@/components/Messages";
 import { fetchRedis } from "@/helpers/redis";
 import { authOptions } from "@/lib/auth";
 import { messageArrayValidator } from "@/lib/validations/message";
 import { getServerSession } from "next-auth";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import React from "react";
 
@@ -56,7 +59,13 @@ const page = async ({ params }: PageProps) => {
         <div className="relative flex items-center space-x-4">
           <div className="relative">
             <div className="relative w-8 sm:w-12 h-8 sm:h-12">
-              {/* image */}
+              <Image
+                fill
+                referrerPolicy="no-referrer"
+                src={chatPartner.image}
+                className="rounded-full"
+                alt={`${chatPartner.name} profile picture`}
+              />
             </div>
           </div>
 
@@ -71,6 +80,14 @@ const page = async ({ params }: PageProps) => {
           </div>
         </div>
       </div>
+      <Messages
+        chatId={chatId}
+        chatPartner={chatPartner}
+        sessionImg={session.user.image}
+        sessionId={session.user.id}
+        initialMessages={initialMessages}
+      />
+      <ChatInput chatId={chatId} chatPartner={chatPartner} />
     </div>
   );
 };
