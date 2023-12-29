@@ -1,5 +1,7 @@
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { pusherServer } from "@/lib/pusher";
+import { toPusherKey } from "@/lib/utils";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -14,6 +16,11 @@ export async function POST(req: NextRequest) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    await pusherServer.trigger(
+      toPusherKey(`user:${session.user.id}:incoming_friend_requests`),
+      "deny_friend_requests",
+      idToDeny
+    );
     await db.srem(`user:${session.user.id}:incoming_friend_requests`, idToDeny);
 
     return new NextResponse("OK");

@@ -27,11 +27,15 @@ const FriendRequestSidebarOptions = ({
     const friendRequestHandler = () => {
       setUnseenRequestCount((prev) => prev + 1);
     };
+    const friendRequestDenyHandler = () => {
+      setUnseenRequestCount((prev) => prev - 1);
+    };
     const addFriendHandler = () => {
       setUnseenRequestCount((prev) => prev - 1);
     };
 
     pusherClient.bind("incoming_friend_requests", friendRequestHandler);
+    pusherClient.bind("deny_friend_requests", friendRequestDenyHandler);
     pusherClient.bind("new_friend", addFriendHandler);
     return () => {
       pusherClient.unsubscribe(
@@ -40,6 +44,7 @@ const FriendRequestSidebarOptions = ({
       pusherClient.unsubscribe(toPusherKey(`user:${sessionId}:friends`));
 
       pusherClient.unbind("incoming_friend_requests", friendRequestHandler);
+      pusherClient.unbind("deny_friend_requests", friendRequestDenyHandler);
       pusherClient.unbind("new_friend", addFriendHandler);
     };
   }, [sessionId]);
