@@ -22,17 +22,25 @@ const FriendRequestSidebarOptions = ({
     pusherClient.subscribe(
       toPusherKey(`user:${sessionId}:incoming_friend_requests`)
     );
+    pusherClient.subscribe(toPusherKey(`user:${sessionId}:friends`));
+
     const friendRequestHandler = () => {
       setUnseenRequestCount((prev) => prev + 1);
     };
+    const addFriendHandler = () => {
+      setUnseenRequestCount((prev) => prev - 1);
+    };
 
     pusherClient.bind("incoming_friend_requests", friendRequestHandler);
-
+    pusherClient.bind("new_friend", addFriendHandler);
     return () => {
       pusherClient.unsubscribe(
         toPusherKey(`user:${sessionId}:incoming_friend_requests`)
       );
+      pusherClient.unsubscribe(toPusherKey(`user:${sessionId}:friends`));
+
       pusherClient.unbind("incoming_friend_requests", friendRequestHandler);
+      pusherClient.unbind("new_friend", addFriendHandler);
     };
   }, [sessionId]);
 
